@@ -19,7 +19,14 @@ Dieses Tool berechnet auf Basis deiner Fonds-Holdings und NAV-Dateien die monatl
 # Datei-Uploads
 holdings_file = st.file_uploader("🔼 Lade die Holdings-Datei hoch (.xlsx)", type=["xlsx"])
 nav_file = st.file_uploader("🔼 Lade die NAV-Datei hoch (.xlsx)", type=["xlsx"])
-
+bps_input = st.number_input(
+    "📉 Höhe der Vertriebsprovision in Basispunkten (bps)",
+    min_value=0.0,
+    max_value=200.0,
+    value=60.0,
+    step=0.5,
+    help="Standard sind 60 bps – du kannst hier einen anderen Wert eingeben."
+)
 if holdings_file and nav_file:
     try:
         holdings_excel = pd.ExcelFile(holdings_file)
@@ -41,7 +48,9 @@ if holdings_file and nav_file:
         merged = pd.merge(aggregated, latest_navs, on="isin", how="left")
 
         # Berechnung
-        bps = 60
+
+        provision = holdings * bps_input / 10000 / 12
+
         merged["holding_value"] = merged["units"] * merged["nav"]
         merged["monthly_trail_fee"] = merged["holding_value"] * (bps / 10000) / 12
 
